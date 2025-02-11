@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# Color codes for styling
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'  # No color
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo -e "${CYAN}Usage:${NC} kubectl node-debug"
+    echo -e "Select a Kubernetes node and open a debug shell using kubectl debug."
+    exit 0
+fi
+
+get_nodes() {
+    kubectl get nodes --no-headers -o custom-columns="NAME:.metadata.name"
+}
+
+select_node() {
+    local nodes
+    nodes=$(get_nodes)
+
+    if [ -z "$nodes" ]; then
+        echo -e "${RED}No nodes found!${NC}" >&2
+        exit 1
+    fi
+
+    # Format fzf UI
+    selected_node=$(echo "$nodes" | fzf --prompt="🔹 Select a Node: " \
+        --height=12 --border --reverse --color=16 \
+        --info=inline --layout=reverse --pointer="▶" \
+        --marker="✔" --ansi)
+
+    echo "$selected_node"
+}
+
+debug_node() {
+    local node=$1
+    echo -e "${CYAN}Starting debug session on node: ${NC}$node"
+    kubectl debug node/"$node" -it --image=busybox -- sh -c "exec chroot /host"
+}
+
+# Main execution
+main() {
+    local node
+    node=$(select_node)
+
+    if [ -n "$node" ]; then
+        debug_node "$node"
+    else
+        echo -e "${RED}No node selected. Exiting.${NC}" >&2
+    fi
+}
+
+main
