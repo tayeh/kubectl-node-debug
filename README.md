@@ -53,7 +53,7 @@ kubectl krew uninstall node-debug
 ```
 
 ## 🤝 Contributing
-Feel free to open issues or PRs on [GitHub](https://github.com/yourusername/kubectl-node-debug)!
+Feel free to open issues or PRs on [GitHub](https://github.com/tayeh/kubectl-node-debug)!
 
 ---
 🚀 **Happy debugging!**
